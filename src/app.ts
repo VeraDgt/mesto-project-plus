@@ -1,5 +1,5 @@
 import express from 'express';
-import { PORT, DATABASE } from 'utils/constants';
+import { PORT, DATABASE } from '../src/utils/constants';
 
 const app = express();
 
