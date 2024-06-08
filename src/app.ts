@@ -1,7 +1,5 @@
 import express from 'express';
-
-
-const { PORT = 3000 } = process.env;
+import { PORT, DATABASE } from 'utils/constants';
 
 const app = express();
 
