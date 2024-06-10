@@ -1,9 +1,11 @@
 const SERVER = {
   PORT: 3000,
   DATABASE: "mongodb://localhost:27017/mestodb",
+  MONGODB_CONFLICT_CODE: 'E11000',
 };
 
 export const {
   PORT = SERVER.PORT,
   DATABASE = SERVER.DATABASE,
+  MONGODB_CONFLICT_CODE = SERVER.MONGODB_CONFLICT_CODE,
 } = process.env;

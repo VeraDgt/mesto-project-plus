@@ -1,11 +1,14 @@
-import express from 'express';
+import express, { json } from 'express';
 import { PORT, DATABASE } from '../src/utils/constants';
 import mongoose from 'mongoose';
 import router from '../src/routes/index';
+import errorHandler from '../src/middleware/error-handler';
 
 const app = express();
-
+app.use(json());
 app.use(router);
+
+app.use(errorHandler);
 
 const connect = async () => {
   try {
