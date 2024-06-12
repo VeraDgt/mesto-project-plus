@@ -3,8 +3,9 @@ import User from '../models/user';
 import NotFoundError from "../error/not-found-error";
 import { Error as MongooseErr } from "mongoose";
 import BadRequestError from "../error/bad-request-error";
-import ConflictError from "error/conflict-error";
+import ConflictError from "../error/conflict-error";
 import { MONGODB_CONFLICT_CODE } from "../utils/constants";
+import { IUser } from "../types/types";
 
 export const getUsers = async (req:Request, res:Response, next:NextFunction) => {
   try {
@@ -30,9 +31,8 @@ export const getUserById = async (req:Request, res:Response, next:NextFunction) 
   }
 };
 
-export const createUser = async (req:Request, res:Response, next:NextFunction) => {
+export const createUser = async (req:Request, res:Response<IUser>, next:NextFunction) => {
   try {
-    console.log(req.body);
     const newUser = await User.create(req.body);
     return res.send(newUser);
   } catch (error) {
