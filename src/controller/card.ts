@@ -44,3 +44,41 @@ export const deleteCard = async (req:Request, res:Response<ICard, AuthContext>, 
     return next(error);
   }
 };
+
+export const likeCard = async (req:Request, res:Response<ICard, AuthContext>, next:NextFunction) => {
+  try {
+    const userId = res.locals.user._id;
+    const { cardId } = req.params;
+    const card = await Card
+        .findByIdAndUpdate( cardId,
+          { $addToSet: { likes: userId }},
+          { new: true },
+        )
+        .orFail(new NotFoundError('Карточка не найдена'));
+    return res.send(card);
+  } catch (error) {
+    if (error instanceof MongooseErr.CastError) {
+      next(new BadRequestError('Передан невалидный id'));
+    }
+    return next(error);
+  }
+};
+
+export const dislikeCard = async (req:Request, res:Response<ICard, AuthContext>, next:NextFunction) => {
+  try {
+    const userId = res.locals.user._id;
+    const { cardId } = req.params;
+    const card = await Card
+        .findByIdAndUpdate( cardId,
+          { $pull: { likes: userId }},
+          { new: true },
+        )
+        .orFail(new NotFoundError('Карточка не найдена'));
+    return res.send(card);
+  } catch (error) {
+    if (error instanceof MongooseErr.CastError) {
+      next(new BadRequestError('Передан невалидный id'));
+    }
+    return next(error);
+  }
+};
