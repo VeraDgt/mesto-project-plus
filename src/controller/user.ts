@@ -45,3 +45,36 @@ export const createUser = async (req:Request, res:Response<IUser>, next:NextFunc
     return next(error);
   }
 };
+
+export const updateUser = async (req:Request, res:Response, next:NextFunction) => {
+  try {
+    const userId = res.locals.user._id;
+
+    const { name, about } = req.body;
+    const user = await User
+        .findByIdAndUpdate({ _id: userId }, { name, about }, { new: true })
+        .orFail(new NotFoundError('Пользователь не найден'));
+    return res.send(user);
+  } catch (error) {
+    if (error instanceof MongooseErr.CastError) {
+      next(new BadRequestError('Передан невалидный id'));
+    }
+    return next(error);
+  }
+};
+
+export const updateUserAvatar = async (req:Request, res:Response, next:NextFunction) => {
+  try {
+    const userId = res.locals.user._id;
+    const { avatar } = req.body;
+    const user = await User
+        .findByIdAndUpdate({ _id: userId }, { avatar }, { new: true })
+        .orFail(new NotFoundError('Пользователь не найден'));
+    return res.send(user);
+  } catch (error) {
+    if (error instanceof MongooseErr.CastError) {
+      next(new BadRequestError('Передан невалидный id'));
+    }
+    return next(error);
+  }
+};
