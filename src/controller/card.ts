@@ -18,8 +18,9 @@ export const getCards = async (req:Request, res:Response, next:NextFunction) => 
 export const createCard = async (req:Request, res:Response<ICard, AuthContext>, next:NextFunction) => {
   try {
     const userId = res.locals.user._id;
+    const { name, link } = req.body;
 
-    const newCard = await Card.create(req.body);
+    const newCard = await Card.create({ name, link, owner: userId });
     return res.send(newCard);
   } catch (error) {
     if (error instanceof MongooseErr.ValidationError) {
@@ -31,13 +32,14 @@ export const createCard = async (req:Request, res:Response<ICard, AuthContext>, 
 
 export const deleteCard = async (req:Request, res:Response<ICard, AuthContext>, next:NextFunction) => {
   try {
-    const userId = res.locals.user._id;
-
-    const newCard = await Card.create(req.body);
-    return res.send(newCard);
+    const { cardId } = req.params;
+    const card = await Card
+        .findByIdAndDelete(cardId)
+        .orFail(new NotFoundError('Карточка не найдена'));
+    return res.send(card);
   } catch (error) {
-    if (error instanceof MongooseErr.ValidationError) {
-      next(new BadRequestError(error.message));
+    if (error instanceof MongooseErr.CastError) {
+      next(new BadRequestError('Передан невалидный id'));
     }
     return next(error);
   }
