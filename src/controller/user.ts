@@ -6,6 +6,7 @@ import BadRequestError from "../error/bad-request-error";
 import ConflictError from "../error/conflict-error";
 import { MONGODB_CONFLICT_CODE } from "../utils/constants";
 import { IUser } from "../types/types";
+import { resOK } from "../utils/response-created";
 
 export const getUsers = async (req:Request, res:Response, next:NextFunction) => {
   try {
@@ -21,11 +22,11 @@ export const getUserById = async (req:Request, res:Response, next:NextFunction) 
     const { userId } = req.params;
     const user = await User
         .findById(userId)
-        .orFail(new NotFoundError('Пользователь не найден'));
+        .orFail(() => NotFoundError('Пользователь не найден'));
     return res.send(user);
   } catch (error) {
     if (error instanceof MongooseErr.CastError) {
-      next(new BadRequestError('Передан невалидный id'));
+      return next(new BadRequestError('Передан невалидный id'));
     }
     return next(error);
   }
@@ -34,13 +35,13 @@ export const getUserById = async (req:Request, res:Response, next:NextFunction) 
 export const createUser = async (req:Request, res:Response<IUser>, next:NextFunction) => {
   try {
     const newUser = await User.create(req.body);
-    return res.send(newUser);
+    return resOK(res, newUser);
   } catch (error) {
     if (error instanceof MongooseErr.ValidationError) {
-      next(new BadRequestError(error.message));
+      return next(new BadRequestError(error.message));
     }
     if (error instanceof Error && error.message.startsWith(MONGODB_CONFLICT_CODE)) {
-      next(new ConflictError('Пользователь с таким именем уже существует'));
+      return next(new ConflictError('Пользователь с таким именем уже существует'));
     }
     return next(error);
   }
@@ -52,12 +53,15 @@ export const updateUser = async (req:Request, res:Response, next:NextFunction) =
 
     const { name, about } = req.body;
     const user = await User
-        .findByIdAndUpdate({ _id: userId }, { name, about }, { new: true })
-        .orFail(new NotFoundError('Пользователь не найден'));
+        .findByIdAndUpdate({ _id: userId }, { name, about }, { new: true, runValidators: true })
+        .orFail(() => NotFoundError('Пользователь не найден'));
     return res.send(user);
   } catch (error) {
+    if (error instanceof MongooseErr.ValidationError) {
+      return next(new BadRequestError(error.message));
+    }
     if (error instanceof MongooseErr.CastError) {
-      next(new BadRequestError('Передан невалидный id'));
+      return next(new BadRequestError('Передан невалидный id'));
     }
     return next(error);
   }
@@ -68,12 +72,15 @@ export const updateUserAvatar = async (req:Request, res:Response, next:NextFunct
     const userId = res.locals.user._id;
     const { avatar } = req.body;
     const user = await User
-        .findByIdAndUpdate({ _id: userId }, { avatar }, { new: true })
-        .orFail(new NotFoundError('Пользователь не найден'));
+        .findByIdAndUpdate({ _id: userId }, { avatar }, { new: true, runValidators: true })
+        .orFail(() => NotFoundError('Пользователь не найден'));
     return res.send(user);
   } catch (error) {
+    if (error instanceof MongooseErr.ValidationError) {
+      return next(new BadRequestError(error.message));
+    }
     if (error instanceof MongooseErr.CastError) {
-      next(new BadRequestError('Передан невалидный id'));
+      return next(new BadRequestError('Передан невалидный id'));
     }
     return next(error);
   }

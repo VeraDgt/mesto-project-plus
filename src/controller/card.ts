@@ -5,6 +5,7 @@ import { Error as MongooseErr } from "mongoose";
 import BadRequestError from "../error/bad-request-error";
 import { ICard } from "../types/types";
 import { AuthContext } from "../types/auth-context";
+import { resOK } from "../utils/response-created";
 
 export const getCards = async (req:Request, res:Response, next:NextFunction) => {
   try {
@@ -21,10 +22,10 @@ export const createCard = async (req:Request, res:Response<ICard, AuthContext>, 
     const { name, link } = req.body;
 
     const newCard = await Card.create({ name, link, owner: userId });
-    return res.send(newCard);
+    return resOK(res, newCard);
   } catch (error) {
     if (error instanceof MongooseErr.ValidationError) {
-      next(new BadRequestError(error.message));
+      return next(new BadRequestError(error.message));
     }
     return next(error);
   }
@@ -35,7 +36,7 @@ export const deleteCard = async (req:Request, res:Response<ICard, AuthContext>, 
     const { cardId } = req.params;
     const card = await Card
         .findByIdAndDelete(cardId)
-        .orFail(new NotFoundError('Карточка не найдена'));
+        .orFail(() => NotFoundError('Карточка не найдена'));
     return res.send(card);
   } catch (error) {
     if (error instanceof MongooseErr.CastError) {
@@ -54,11 +55,11 @@ export const likeCard = async (req:Request, res:Response<ICard, AuthContext>, ne
           { $addToSet: { likes: userId }},
           { new: true },
         )
-        .orFail(new NotFoundError('Карточка не найдена'));
+        .orFail(() => NotFoundError('Карточка не найдена'));
     return res.send(card);
   } catch (error) {
     if (error instanceof MongooseErr.CastError) {
-      next(new BadRequestError('Передан невалидный id'));
+      return next(new BadRequestError('Передан невалидный id'));
     }
     return next(error);
   }
@@ -73,11 +74,11 @@ export const dislikeCard = async (req:Request, res:Response<ICard, AuthContext>,
           { $pull: { likes: userId }},
           { new: true },
         )
-        .orFail(new NotFoundError('Карточка не найдена'));
+        .orFail(() => NotFoundError('Карточка не найдена'));
     return res.send(card);
   } catch (error) {
     if (error instanceof MongooseErr.CastError) {
-      next(new BadRequestError('Передан невалидный id'));
+      return next(new BadRequestError('Передан невалидный id'));
     }
     return next(error);
   }
