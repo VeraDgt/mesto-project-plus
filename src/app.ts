@@ -1,4 +1,5 @@
 import express, { NextFunction, json } from 'express';
+import helmet from 'helmet';
 import { PORT, DATABASE } from '../src/utils/constants';
 import mongoose from 'mongoose';
 import router from '../src/routes/index';
@@ -8,6 +9,7 @@ import { Request, Response } from "express";
 import { AuthContext } from 'types/auth-context';
 
 const app = express();
+app.use(helmet());
 app.use(json());
 app.use((req: Request, res: Response<unknown, AuthContext>, next: NextFunction) => {
   res.locals.user = {
