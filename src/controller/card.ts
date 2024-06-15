@@ -35,7 +35,7 @@ export const deleteCard = async (req:Request, res:Response<ICard, AuthContext>, 
     const { cardId } = req.params;
     const card = await Card
         .findByIdAndDelete(cardId)
-        .orFail(new NotFoundError('Карточка не найдена'));
+        .orFail(() => NotFoundError('Карточка не найдена'));
     return res.send(card);
   } catch (error) {
     if (error instanceof MongooseErr.CastError) {
@@ -54,7 +54,7 @@ export const likeCard = async (req:Request, res:Response<ICard, AuthContext>, ne
           { $addToSet: { likes: userId }},
           { new: true },
         )
-        .orFail(new NotFoundError('Карточка не найдена'));
+        .orFail(() => NotFoundError('Карточка не найдена'));
     return res.send(card);
   } catch (error) {
     if (error instanceof MongooseErr.CastError) {
@@ -73,7 +73,7 @@ export const dislikeCard = async (req:Request, res:Response<ICard, AuthContext>,
           { $pull: { likes: userId }},
           { new: true },
         )
-        .orFail(new NotFoundError('Карточка не найдена'));
+        .orFail(() => NotFoundError('Карточка не найдена'));
     return res.send(card);
   } catch (error) {
     if (error instanceof MongooseErr.CastError) {

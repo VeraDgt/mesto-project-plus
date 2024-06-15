@@ -15,7 +15,7 @@ app.use((req: Request, res: Response<unknown, AuthContext>, next: NextFunction) 
   };
   next();
 })
-app.use(router);
+app.use('/', router);
 app.use(express.static(join(__dirname, "public")));
 app.use(errorHandler);
 

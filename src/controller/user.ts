@@ -21,7 +21,7 @@ export const getUserById = async (req:Request, res:Response, next:NextFunction) 
     const { userId } = req.params;
     const user = await User
         .findById(userId)
-        .orFail(new NotFoundError('Пользователь не найден'));
+        .orFail(() => NotFoundError('Пользователь не найден'));
     return res.send(user);
   } catch (error) {
     if (error instanceof MongooseErr.CastError) {
@@ -53,7 +53,7 @@ export const updateUser = async (req:Request, res:Response, next:NextFunction) =
     const { name, about } = req.body;
     const user = await User
         .findByIdAndUpdate({ _id: userId }, { name, about }, { new: true })
-        .orFail(new NotFoundError('Пользователь не найден'));
+        .orFail(() => NotFoundError('Пользователь не найден'));
     return res.send(user);
   } catch (error) {
     if (error instanceof MongooseErr.CastError) {
@@ -69,7 +69,7 @@ export const updateUserAvatar = async (req:Request, res:Response, next:NextFunct
     const { avatar } = req.body;
     const user = await User
         .findByIdAndUpdate({ _id: userId }, { avatar }, { new: true })
-        .orFail(new NotFoundError('Пользователь не найден'));
+        .orFail(() => NotFoundError('Пользователь не найден'));
     return res.send(user);
   } catch (error) {
     if (error instanceof MongooseErr.CastError) {
