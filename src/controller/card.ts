@@ -5,7 +5,7 @@ import { Error as MongooseErr } from "mongoose";
 import BadRequestError from "../error/bad-request-error";
 import { ICard } from "../types/types";
 import { AuthContext } from "../types/auth-context";
-import { resOK } from "../utils/response-created";
+import { resOkCreated } from "../utils/response";
 
 export const getCards = async (req:Request, res:Response, next:NextFunction) => {
   try {
@@ -22,7 +22,7 @@ export const createCard = async (req:Request, res:Response<ICard, AuthContext>, 
     const { name, link } = req.body;
 
     const newCard = await Card.create({ name, link, owner: userId });
-    return resOK(res, newCard);
+    return resOkCreated(res, newCard);
   } catch (error) {
     if (error instanceof MongooseErr.ValidationError) {
       return next(new BadRequestError(error.message));

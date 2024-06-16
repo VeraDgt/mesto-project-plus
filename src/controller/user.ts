@@ -4,10 +4,11 @@ import NotFoundError from "../error/not-found-error";
 import { Error as MongooseErr } from "mongoose";
 import BadRequestError from "../error/bad-request-error";
 import ConflictError from "../error/conflict-error";
-import { MONGODB_CONFLICT_CODE } from "../utils/constants";
+import { MONGODB_CONFLICT_CODE, JWT_SECRET } from "../utils/constants";
 import { IUser } from "../types/types";
-import { resOK } from "../utils/response-created";
+import { resOkCreated } from "../utils/response";
 import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 
 const SALT = 10;
 
@@ -48,7 +49,7 @@ export const createUser = async (req:Request, res:Response<IUser>, next:NextFunc
       password: hash,
     });
     await newUser.save();
-    return resOK(res, newUser);
+    return resOkCreated(res, newUser);
   } catch (error) {
     if (error instanceof MongooseErr.ValidationError) {
       return next(new BadRequestError(error.message));
@@ -96,5 +97,25 @@ export const updateUserAvatar = async (req:Request, res:Response, next:NextFunct
       return next(new BadRequestError('Передан невалидный id'));
     }
     return next(error);
+  }
+};
+
+export const login = async (req:Request, res:Response, next:NextFunction) => {
+  const { email, password } = req.body;
+  try {
+    const user = await User.findUserByCredentials(email, password);
+    const id = user.id || '';
+    const token = jwt.sign({ _id: user._id}, JWT_SECRET, {
+      expiresIn: '7d',
+    });
+    return res
+    .cookie('jwt', token, {
+      httpOnly: true,
+      sameSite: true,
+      maxAge: 3600000 * 24 * 7,
+    })
+    .send({ token });
+  } catch (err) {
+    return next(err);
   }
 };

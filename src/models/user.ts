@@ -1,11 +1,13 @@
 import mongoose, { Schema } from "mongoose";
-import { IUser } from "../types/types";
+import { IUser, IUserModel } from "../types/types";
 import isURL from "validator/lib/isURL";
 import isEmail from "validator/lib/isEmail";
 // import { isStrongPassword } from "validator";
-import { DEFAULT_USER_NAME, DEFAULT_USER_ABOUT, DEFAULT_USER_AVATAR } from "utils/constants";
+import { DEFAULT_USER_NAME, DEFAULT_USER_ABOUT, DEFAULT_USER_AVATAR } from "../utils/constants";
+import UnauthorizedError from "../error/unauthorized-error";
+import bcrypt from 'bcryptjs';
 
-const userSchema = new Schema<IUser>({
+const userSchema = new Schema<IUser, IUserModel>({
   name: {
     type: String,
     minlength: [2, 'Минимальная длина поля "name" - 2'],
@@ -48,4 +50,26 @@ const userSchema = new Schema<IUser>({
   timestamps: true,
 });
 
-export default mongoose.model<IUser>('user', userSchema);
+userSchema.static('findUserByCredentials', async function findUserByCredentials(
+  email: string,
+  password: string,
+) {
+  const currentUser: (mongoose.Document<unknown, any, IUser>
+    & Omit<IUser & { _id: mongoose.Types.ObjectId }, never>
+  )
+  | null = await this.findOne({ email }).select('+password');
+
+  if (!currentUser) {
+    throw new UnauthorizedError();
+  }
+
+  const matched = await bcrypt.compare(password, currentUser.password);
+
+  if (!matched) {
+    throw new UnauthorizedError('Некорректный email или пароль');
+  }
+
+  return currentUser;
+});
+
+export default mongoose.model<IUser, IUserModel>('user', userSchema);
