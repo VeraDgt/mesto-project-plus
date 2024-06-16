@@ -7,6 +7,9 @@ import ConflictError from "../error/conflict-error";
 import { MONGODB_CONFLICT_CODE } from "../utils/constants";
 import { IUser } from "../types/types";
 import { resOK } from "../utils/response-created";
+import bcrypt from 'bcryptjs';
+
+const SALT = 10;
 
 export const getUsers = async (req:Request, res:Response, next:NextFunction) => {
   try {
@@ -34,7 +37,17 @@ export const getUserById = async (req:Request, res:Response, next:NextFunction) 
 
 export const createUser = async (req:Request, res:Response<IUser>, next:NextFunction) => {
   try {
-    const newUser = await User.create(req.body);
+    const { name, about, avatar, email, password } = req.body;
+    const salt = bcrypt.genSaltSync(SALT);
+    const hash = bcrypt.hashSync(password, salt);
+    const newUser = await new User({
+      name,
+      about,
+      avatar,
+      email,
+      password: hash,
+    });
+    await newUser.save();
     return resOK(res, newUser);
   } catch (error) {
     if (error instanceof MongooseErr.ValidationError) {
