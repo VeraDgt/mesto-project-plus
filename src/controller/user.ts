@@ -9,6 +9,7 @@ import { IUser } from "../types/types";
 import { resOkCreated } from "../utils/response";
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { RequestAuth } from "middleware/auth";
 
 const SALT = 10;
 
@@ -21,9 +22,8 @@ export const getUsers = async (req:Request, res:Response, next:NextFunction) => 
   }
 };
 
-export const getUserById = async (req:Request, res:Response, next:NextFunction) => {
+const getUser = async (userId:string, res:Response, next:NextFunction) => {
   try {
-    const { userId } = req.params;
     const user = await User
         .findById(userId)
         .orFail(() => NotFoundError('Пользователь не найден'));
@@ -34,6 +34,11 @@ export const getUserById = async (req:Request, res:Response, next:NextFunction) 
     }
     return next(error);
   }
+};
+
+export const getUserById = async (req:Request, res:Response, next:NextFunction) => {
+  const { userId } = req.params;
+  return getUser(userId, res, next);
 };
 
 export const createUser = async (req:Request, res:Response<IUser>, next:NextFunction) => {
@@ -116,5 +121,20 @@ export const login = async (req:Request, res:Response, next:NextFunction) => {
     .send({ token });
   } catch (err) {
     return next(err);
+  }
+};
+
+export const getUserMe = async (req:RequestAuth, res:Response, next:NextFunction) => {
+  try {
+    const userId = req.user?._id;
+    const user = await User
+        .findById({ _id: userId })
+        .orFail(() => NotFoundError('Пользователь не найден'));
+    return res.send(user);
+  } catch (error) {
+    if (error instanceof MongooseErr.ValidationError) {
+      return next(new BadRequestError(error.message));
+    }
+    return next(error);
   }
 };
