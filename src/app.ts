@@ -7,6 +7,7 @@ import errorHandler from '../src/middleware/error-handler';
 import { join } from 'path';
 import { Request, Response } from "express";
 import { AuthContext } from 'types/auth-context';
+import { createUser, login } from '../src/controller/user';
 
 const app = express();
 app.use(helmet());
@@ -17,6 +18,9 @@ app.use((req: Request, res: Response<unknown, AuthContext>, next: NextFunction) 
   };
   next();
 })
+app.post('/signin', login);
+app.post('/signup', createUser);
+
 app.use('/', router);
 app.use(express.static(join(__dirname, "public")));
 app.use(errorHandler);
