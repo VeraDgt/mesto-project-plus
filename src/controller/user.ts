@@ -9,7 +9,7 @@ import { IUser } from "../types/types";
 import { resOkCreated } from "../utils/response";
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { RequestAuth } from "middleware/auth";
+import { RequestAuth } from "../types/types";
 
 const SALT = 10;
 
@@ -126,9 +126,8 @@ export const login = async (req:Request, res:Response, next:NextFunction) => {
 
 export const getUserMe = async (req:RequestAuth, res:Response, next:NextFunction) => {
   try {
-    const userId = req.user?._id;
     const user = await User
-        .findById({ _id: userId })
+        .findById(req.user)
         .orFail(() => NotFoundError('Пользователь не найден'));
     return res.send(user);
   } catch (error) {

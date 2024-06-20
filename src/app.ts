@@ -5,22 +5,16 @@ import mongoose from 'mongoose';
 import router from '../src/routes/index';
 import errorHandler from '../src/middleware/error-handler';
 import { join } from 'path';
-import { Request, Response } from "express";
-import { AuthContext } from 'types/auth-context';
 import { createUser, login } from '../src/controller/user';
+import { auth } from "../src/middleware/auth";
 
 const app = express();
 app.use(helmet());
 app.use(json());
-app.use((req: Request, res: Response<unknown, AuthContext>, next: NextFunction) => {
-  res.locals.user = {
-    _id: '66670d0b239c74fcdb41b630',
-  };
-  next();
-})
+
 app.post('/signin', login);
 app.post('/signup', createUser);
-
+app.use(auth);
 app.use('/', router);
 app.use(express.static(join(__dirname, "public")));
 app.use(errorHandler);

@@ -1,4 +1,6 @@
 import mongoose, { Schema, Document } from "mongoose";
+import { Request } from "express";
+import { JwtPayload } from "jsonwebtoken";
 
 export interface IUser {
   name: string;
@@ -21,4 +23,8 @@ export interface ICard {
   owner: Schema.Types.ObjectId,
   likes: Schema.Types.ObjectId[] | [],
   createdAt: Date,
+}
+
+export interface RequestAuth extends Request {
+  user?: string | JwtPayload;
 }
