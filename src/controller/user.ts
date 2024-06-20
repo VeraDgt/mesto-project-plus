@@ -5,15 +5,14 @@ import { Error as MongooseErr } from "mongoose";
 import BadRequestError from "../error/bad-request-error";
 import ConflictError from "../error/conflict-error";
 import { MONGODB_CONFLICT_CODE, JWT_SECRET } from "../utils/constants";
-import { IUser } from "../types/types";
+import { IUser, RequestAuth } from "../types/types";
 import { resOkCreated } from "../utils/response";
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { RequestAuth } from "../types/types";
 
 const SALT = 10;
 
-export const getUsers = async (req:Request, res:Response, next:NextFunction) => {
+export const getUsers = async (req:RequestAuth, res:Response, next:NextFunction) => {
   try {
     const users = await User.find({});
     res.send(users);
@@ -36,7 +35,7 @@ const getUser = async (userId:string, res:Response, next:NextFunction) => {
   }
 };
 
-export const getUserById = async (req:Request, res:Response, next:NextFunction) => {
+export const getUserById = async (req:RequestAuth, res:Response, next:NextFunction) => {
   const { userId } = req.params;
   return getUser(userId, res, next);
 };
@@ -66,9 +65,9 @@ export const createUser = async (req:Request, res:Response<IUser>, next:NextFunc
   }
 };
 
-export const updateUser = async (req:Request, res:Response, next:NextFunction) => {
+export const updateUser = async (req:RequestAuth, res:Response, next:NextFunction) => {
   try {
-    const userId = res.locals.user._id;
+    const userId = req.user;
 
     const { name, about } = req.body;
     const user = await User
@@ -86,9 +85,9 @@ export const updateUser = async (req:Request, res:Response, next:NextFunction) =
   }
 };
 
-export const updateUserAvatar = async (req:Request, res:Response, next:NextFunction) => {
+export const updateUserAvatar = async (req:RequestAuth, res:Response, next:NextFunction) => {
   try {
-    const userId = res.locals.user._id;
+    const userId = req.user;
     const { avatar } = req.body;
     const user = await User
         .findByIdAndUpdate({ _id: userId }, { avatar }, { new: true, runValidators: true })

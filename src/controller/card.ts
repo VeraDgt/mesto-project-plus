@@ -3,11 +3,11 @@ import Card from '../models/card';
 import NotFoundError from "../error/not-found-error";
 import { Error as MongooseErr } from "mongoose";
 import BadRequestError from "../error/bad-request-error";
-import { ICard } from "../types/types";
+import { ICard, RequestAuth } from "../types/types";
 import { AuthContext } from "../types/auth-context";
 import { resOkCreated } from "../utils/response";
 
-export const getCards = async (req:Request, res:Response, next:NextFunction) => {
+export const getCards = async (req:RequestAuth, res:Response, next:NextFunction) => {
   try {
     const cards = await Card.find({});
     res.send(cards);
@@ -16,9 +16,9 @@ export const getCards = async (req:Request, res:Response, next:NextFunction) => 
   }
 };
 
-export const createCard = async (req:Request, res:Response<ICard, AuthContext>, next:NextFunction) => {
+export const createCard = async (req:RequestAuth, res:Response<ICard, AuthContext>, next:NextFunction) => {
   try {
-    const userId = res.locals.user._id;
+    const userId = req.user;
     const { name, link } = req.body;
 
     const newCard = await Card.create({ name, link, owner: userId });
@@ -31,7 +31,7 @@ export const createCard = async (req:Request, res:Response<ICard, AuthContext>, 
   }
 };
 
-export const deleteCard = async (req:Request, res:Response<ICard, AuthContext>, next:NextFunction) => {
+export const deleteCard = async (req:RequestAuth, res:Response<ICard, AuthContext>, next:NextFunction) => {
   try {
     const { cardId } = req.params;
     const card = await Card
@@ -46,9 +46,9 @@ export const deleteCard = async (req:Request, res:Response<ICard, AuthContext>, 
   }
 };
 
-export const likeCard = async (req:Request, res:Response<ICard, AuthContext>, next:NextFunction) => {
+export const likeCard = async (req:RequestAuth, res:Response<ICard, AuthContext>, next:NextFunction) => {
   try {
-    const userId = res.locals.user._id;
+    const userId = req.user;
     const { cardId } = req.params;
     const card = await Card
         .findByIdAndUpdate( cardId,
@@ -65,9 +65,9 @@ export const likeCard = async (req:Request, res:Response<ICard, AuthContext>, ne
   }
 };
 
-export const dislikeCard = async (req:Request, res:Response<ICard, AuthContext>, next:NextFunction) => {
+export const dislikeCard = async (req:RequestAuth, res:Response<ICard, AuthContext>, next:NextFunction) => {
   try {
-    const userId = res.locals.user._id;
+    const userId = req.user;
     const { cardId } = req.params;
     const card = await Card
         .findByIdAndUpdate( cardId,

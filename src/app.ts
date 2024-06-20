@@ -1,4 +1,4 @@
-import express, { NextFunction, json } from 'express';
+import express, { NextFunction, json, urlencoded } from 'express';
 import helmet from 'helmet';
 import { PORT, DATABASE } from '../src/utils/constants';
 import mongoose from 'mongoose';
@@ -8,9 +8,13 @@ import { join } from 'path';
 import { createUser, login } from '../src/controller/user';
 import { auth } from "../src/middleware/auth";
 
+const cookieParser = require('cookie-parser');
+
 const app = express();
 app.use(helmet());
 app.use(json());
+app.use(cookieParser());
+app.use(urlencoded({ extended: true }));
 
 app.post('/signin', login);
 app.post('/signup', createUser);
