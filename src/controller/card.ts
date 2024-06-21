@@ -7,7 +7,7 @@ import { ICard, RequestAuth } from "../types/types";
 import { AuthContext } from "../types/auth-context";
 import { resOkCreated } from "../utils/response";
 
-export const getCards = async (req:RequestAuth, res:Response, next:NextFunction) => {
+export const getCards = async (req:Request, res:Response, next:NextFunction) => {
   try {
     const cards = await Card.find({});
     res.send(cards);
