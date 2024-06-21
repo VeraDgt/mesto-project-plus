@@ -28,3 +28,9 @@ export interface ICard {
 export interface RequestAuth extends Request {
   user?: string | JwtPayload;
 }
+
+export interface ITokenPayload {
+  _id: string,
+  iat :number,
+  exp: number,
+}

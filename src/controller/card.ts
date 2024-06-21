@@ -3,9 +3,10 @@ import Card from '../models/card';
 import NotFoundError from "../error/not-found-error";
 import { Error as MongooseErr } from "mongoose";
 import BadRequestError from "../error/bad-request-error";
-import { ICard, RequestAuth } from "../types/types";
+import { ICard, RequestAuth, ITokenPayload } from "../types/types";
 import { AuthContext } from "../types/auth-context";
 import { resOkCreated } from "../utils/response";
+import ForbiddenError from "../error/forbidden-error";
 
 export const getCards = async (req:Request, res:Response, next:NextFunction) => {
   try {
@@ -34,10 +35,15 @@ export const createCard = async (req:RequestAuth, res:Response<ICard, AuthContex
 export const deleteCard = async (req:RequestAuth, res:Response<ICard, AuthContext>, next:NextFunction) => {
   try {
     const { cardId } = req.params;
+    const { _id } = req.user as ITokenPayload;
     const card = await Card
-        .findByIdAndDelete(cardId)
-        .orFail(() => NotFoundError('Карточка не найдена'));
-    return res.send(card);
+        .findById(cardId)
+        .orFail(() => NotFoundError('Карточка не найдена'))
+        .then((card) =>
+          card.owner.toString() !== _id
+          ? next(new ForbiddenError('Вы не можете удалить карточку другого пользователя'))
+          : card.delete);
+    return (card);
   } catch (error) {
     if (error instanceof MongooseErr.CastError) {
       next(new BadRequestError('Передан невалидный id'));
