@@ -5,7 +5,7 @@ import { Error as MongooseErr } from "mongoose";
 import BadRequestError from "../error/bad-request-error";
 import { ICard, RequestAuth, ITokenPayload } from "../types/types";
 import { AuthContext } from "../types/auth-context";
-import { resOkCreated } from "../utils/response";
+import { resOkCreated, resOk } from "../utils/response";
 import ForbiddenError from "../error/forbidden-error";
 
 export const getCards = async (req:Request, res:Response, next:NextFunction) => {
@@ -38,12 +38,14 @@ export const deleteCard = async (req:RequestAuth, res:Response<ICard, AuthContex
     const { _id } = req.user as ITokenPayload;
     const card = await Card
         .findById(cardId)
-        .orFail(() => NotFoundError('Карточка не найдена'))
-        .then((card) =>
-          card.owner.toString() !== _id
-          ? next(new ForbiddenError('Вы не можете удалить карточку другого пользователя'))
-          : card.delete);
-    return (card);
+        .orFail(() => NotFoundError('Карточка не найдена'));
+      if (card.owner.toString() !== _id) {
+        return next(new ForbiddenError('Вы не можете удалить карточку другого пользователя'));
+      } else {
+        return Card
+        .deleteOne({ _id: cardId })
+        .then(() => resOk(res, card));
+      }
   } catch (error) {
     if (error instanceof MongooseErr.CastError) {
       next(new BadRequestError('Передан невалидный id'));

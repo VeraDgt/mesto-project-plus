@@ -44,6 +44,7 @@ const userSchema = new Schema<IUser, IUserModel>({
     //   message: 'Пароль должен быть не менее 8 символов',
     // },
     required: [true, 'Поле "password" должно быть заполнено'],
+    select: false,
   }
 }, {
   versionKey: false,

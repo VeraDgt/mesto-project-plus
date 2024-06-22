@@ -127,6 +127,7 @@ export const getUserMe = async (req:RequestAuth, res:Response, next:NextFunction
   try {
     const user = await User
         .findById(req.user)
+        .select('+password')
         .orFail(() => NotFoundError('Пользователь не найден'));
     return res.send(user);
   } catch (error) {
