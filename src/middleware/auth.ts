@@ -4,8 +4,6 @@ import jwt from "jsonwebtoken";
 import { JWT_SECRET } from "../utils/constants";
 import { RequestAuth } from "../types/types";
 
-const headerToken = (header: string) => header.replace('Bearer ', '');
-
 export const auth = (req: RequestAuth, res: Response, next: NextFunction) => {
   const { authorization } = req.headers;
   if (!authorization || !authorization.startsWith('Bearer ')) {
@@ -13,7 +11,7 @@ export const auth = (req: RequestAuth, res: Response, next: NextFunction) => {
     return next(notAuthErr);
   }
 
-  const token = headerToken(authorization);
+  const token = req.cookies.jwt;
   let payload;
   try {
     payload = jwt.verify(token, JWT_SECRET);

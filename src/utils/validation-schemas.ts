@@ -29,7 +29,7 @@ const updateAvatarSchema = Joi.object().keys({
 
 const userIdSchema = Joi.object().keys({ userId: id });
 
-const cardIdSchema = Joi.object().keys({ _id: id });
+const cardIdSchema = Joi.object().keys({ cardId: id });
 
 const createCardSchema = Joi.object().keys({
   name: name.required(),

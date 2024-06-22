@@ -53,7 +53,13 @@ export const createUser = async (req:Request, res:Response<IUser>, next:NextFunc
       password: hash,
     });
     await newUser.save();
-    return resOkCreated(res, newUser);
+    return resOkCreated(res, {
+      name: newUser.name,
+      about: newUser.about,
+      avatar: newUser.avatar,
+      email: newUser.email,
+      _id: newUser._id,
+    });
   } catch (error) {
     if (error instanceof MongooseErr.ValidationError) {
       return next(new BadRequestError(error.message));
@@ -126,7 +132,6 @@ export const getUserMe = async (req:RequestAuth, res:Response, next:NextFunction
   try {
     const user = await User
         .findById(req.user)
-        .select('+password')
         .orFail(() => NotFoundError('Пользователь не найден'));
     return res.send(user);
   } catch (error) {
