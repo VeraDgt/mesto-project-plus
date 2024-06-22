@@ -56,11 +56,11 @@ export const deleteCard = async (req:RequestAuth, res:Response<ICard, AuthContex
 
 export const likeCard = async (req:RequestAuth, res:Response<ICard, AuthContext>, next:NextFunction) => {
   try {
-    const userId = req.user;
+    const userParams = req.user as ITokenPayload;
     const { cardId } = req.params;
     const card = await Card
         .findByIdAndUpdate( cardId,
-          { $addToSet: { likes: userId }},
+          { $addToSet: { likes: userParams._id }},
           { new: true },
         )
         .orFail(() => NotFoundError('Карточка не найдена'));
@@ -75,11 +75,11 @@ export const likeCard = async (req:RequestAuth, res:Response<ICard, AuthContext>
 
 export const dislikeCard = async (req:RequestAuth, res:Response<ICard, AuthContext>, next:NextFunction) => {
   try {
-    const userId = req.user;
+    const userParams = req.user as ITokenPayload;
     const { cardId } = req.params;
     const card = await Card
         .findByIdAndUpdate( cardId,
-          { $pull: { likes: userId }},
+          { $pull: { likes: userParams._id }},
           { new: true },
         )
         .orFail(() => NotFoundError('Карточка не найдена'));

@@ -5,7 +5,7 @@ import { Error as MongooseErr } from "mongoose";
 import BadRequestError from "../error/bad-request-error";
 import ConflictError from "../error/conflict-error";
 import { MONGODB_CONFLICT_CODE, JWT_SECRET } from "../utils/constants";
-import { IUser, RequestAuth } from "../types/types";
+import { IUser, RequestAuth, ITokenPayload } from "../types/types";
 import { resOkCreated } from "../utils/response";
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
@@ -67,11 +67,10 @@ export const createUser = async (req:Request, res:Response<IUser>, next:NextFunc
 
 export const updateUser = async (req:RequestAuth, res:Response, next:NextFunction) => {
   try {
-    const userId = req.user;
-
+    const userParams = req.user as ITokenPayload;
     const { name, about } = req.body;
     const user = await User
-        .findByIdAndUpdate({ _id: userId }, { name, about }, { new: true, runValidators: true })
+        .findByIdAndUpdate({ _id: userParams._id }, { name, about }, { new: true, runValidators: true })
         .orFail(() => NotFoundError('Пользователь не найден'));
     return res.send(user);
   } catch (error) {
@@ -87,10 +86,10 @@ export const updateUser = async (req:RequestAuth, res:Response, next:NextFunctio
 
 export const updateUserAvatar = async (req:RequestAuth, res:Response, next:NextFunction) => {
   try {
-    const userId = req.user;
+    const userParams = req.user as ITokenPayload;
     const { avatar } = req.body;
     const user = await User
-        .findByIdAndUpdate({ _id: userId }, { avatar }, { new: true, runValidators: true })
+        .findByIdAndUpdate({ _id: userParams._id }, { avatar }, { new: true, runValidators: true })
         .orFail(() => NotFoundError('Пользователь не найден'));
     return res.send(user);
   } catch (error) {
