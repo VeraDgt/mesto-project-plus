@@ -37,16 +37,16 @@
                 "js": "never",
                 "ts": "never"
             }
+        ],
+        "no-underscore-dangle": [
+            "error", {
+            "allow": ["_id"]
+            }
+        ],
+        "no-unused-vars": [
+          "error", {
+            "args": "none"
+          }
         ]
-    },
-    "no-underscore-dangle": [
-      "error", {
-        "allow": ["_id"]
-      }
-    ],
-    "no-unused-vars": [
-      "error", {
-        "args": "none"
-      }
-    ]
+    }
 }

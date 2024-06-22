@@ -25,7 +25,6 @@ app.post('/signup', createUserValidation, createUser);
 app.use(auth);
 app.use(router);
 app.use(errors());
-app.use(express.static(join(__dirname, "public")));
 app.use(errorLogger);
 app.use(errorHandler);
 
