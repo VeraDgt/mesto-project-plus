@@ -4,7 +4,6 @@ import cardsRouter from "./cards";
 import noPage from "../controller/no-page";
 
 const router = Router();
-
 router.use('/users', usersRouter);
 router.use('/cards', cardsRouter);
 router.use('/*', noPage);

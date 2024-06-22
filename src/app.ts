@@ -1,24 +1,32 @@
-import express, { NextFunction, json } from 'express';
+import "dotenv/config";
+import express, { NextFunction, json, urlencoded } from 'express';
 import helmet from 'helmet';
 import { PORT, DATABASE } from '../src/utils/constants';
 import mongoose from 'mongoose';
 import router from '../src/routes/index';
 import errorHandler from '../src/middleware/error-handler';
 import { join } from 'path';
-import { Request, Response } from "express";
-import { AuthContext } from 'types/auth-context';
+import { createUser, login } from '../src/controller/user';
+import { auth } from "../src/middleware/auth";
+import { requestLogger, errorLogger } from "../src/middleware/logger";
+import { loginValidation, createUserValidation } from "../src/middleware/validate";
+
+const cookieParser = require('cookie-parser');
+const { errors } = require('celebrate');
 
 const app = express();
 app.use(helmet());
 app.use(json());
-app.use((req: Request, res: Response<unknown, AuthContext>, next: NextFunction) => {
-  res.locals.user = {
-    _id: '66670d0b239c74fcdb41b630',
-  };
-  next();
-})
-app.use('/', router);
+app.use(cookieParser());
+app.use(urlencoded({ extended: true }));
+app.use(requestLogger);
+app.post('/signin', loginValidation, login);
+app.post('/signup', createUserValidation, createUser);
+app.use(auth);
+app.use(router);
+app.use(errors());
 app.use(express.static(join(__dirname, "public")));
+app.use(errorLogger);
 app.use(errorHandler);
 
 const connect = async () => {
